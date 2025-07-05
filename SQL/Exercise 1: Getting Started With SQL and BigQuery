@@ -1,0 +1,982 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "cf3b538c",
+   "metadata": {
+    "papermill": {
+     "duration": 0.005749,
+     "end_time": "2025-07-05T15:19:30.100831",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:30.095082",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "**This notebook is an exercise in the [SQL](https://www.kaggle.com/learn/intro-to-sql) course.  You can reference the tutorial at [this link](https://www.kaggle.com/dansbecker/getting-started-with-sql-and-bigquery).**\n",
+    "\n",
+    "---\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "28aa487c",
+   "metadata": {
+    "papermill": {
+     "duration": 0.004393,
+     "end_time": "2025-07-05T15:19:30.109940",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:30.105547",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "# Introduction\n",
+    "\n",
+    "The first test of your new data exploration skills uses data describing crime in the city of Chicago.\n",
+    "\n",
+    "Before you get started, run the following cell. It sets up the automated feedback system to review your answers."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "5394756b",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-07-05T15:19:30.120578Z",
+     "iopub.status.busy": "2025-07-05T15:19:30.119272Z",
+     "iopub.status.idle": "2025-07-05T15:19:52.662718Z",
+     "shell.execute_reply": "2025-07-05T15:19:52.661445Z"
+    },
+    "papermill": {
+     "duration": 22.550319,
+     "end_time": "2025-07-05T15:19:52.664539",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:30.114220",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/usr/local/lib/python3.11/dist-packages/learntools/sql/ex1.py:64: SyntaxWarning: assertion is always true, perhaps remove parentheses?\n",
+      "  assert (type(fields_for_plotting[0] == str), \"The first item in `fields_for_plotting` should be a string.\")\n",
+      "/usr/local/lib/python3.11/dist-packages/learntools/sql/ex1.py:65: SyntaxWarning: assertion is always true, perhaps remove parentheses?\n",
+      "  assert (type(fields_for_plotting[1] == str), \"The second item in `fields_for_plotting` should be a string.\")\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Using Kaggle's public dataset BigQuery integration.\n",
+      "Setup Complete\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Set up feedack system\n",
+    "from learntools.core import binder\n",
+    "binder.bind(globals())\n",
+    "from learntools.sql.ex1 import *\n",
+    "print(\"Setup Complete\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "7d67451c",
+   "metadata": {
+    "papermill": {
+     "duration": 0.004282,
+     "end_time": "2025-07-05T15:19:52.674140",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:52.669858",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "Use the next code cell to fetch the dataset."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "1a5f3a8c",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-07-05T15:19:52.684511Z",
+     "iopub.status.busy": "2025-07-05T15:19:52.683990Z",
+     "iopub.status.idle": "2025-07-05T15:19:52.984613Z",
+     "shell.execute_reply": "2025-07-05T15:19:52.983686Z"
+    },
+    "papermill": {
+     "duration": 0.30798,
+     "end_time": "2025-07-05T15:19:52.986559",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:52.678579",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Using Kaggle's public dataset BigQuery integration.\n"
+     ]
+    }
+   ],
+   "source": [
+    "from google.cloud import bigquery\n",
+    "\n",
+    "# Create a \"Client\" object\n",
+    "client = bigquery.Client()\n",
+    "\n",
+    "# Construct a reference to the \"chicago_crime\" dataset\n",
+    "dataset_ref = client.dataset(\"chicago_crime\", project=\"bigquery-public-data\")\n",
+    "\n",
+    "# API request - fetch the dataset\n",
+    "dataset = client.get_dataset(dataset_ref)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "af8244d2",
+   "metadata": {
+    "papermill": {
+     "duration": 0.004052,
+     "end_time": "2025-07-05T15:19:52.995158",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:52.991106",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "# Exercises\n",
+    "\n",
+    "### 1) Count tables in the dataset\n",
+    "\n",
+    "How many tables are in the Chicago Crime dataset?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "84cb2d73",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-07-05T15:19:53.005566Z",
+     "iopub.status.busy": "2025-07-05T15:19:53.004631Z",
+     "iopub.status.idle": "2025-07-05T15:19:53.290580Z",
+     "shell.execute_reply": "2025-07-05T15:19:53.289322Z"
+    },
+    "papermill": {
+     "duration": 0.292763,
+     "end_time": "2025-07-05T15:19:53.292241",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:52.999478",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "The total number of tables are: 1\n",
+      "crime\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Write the code you need here to figure out the answer\n",
+    "tables = list(client.list_tables(dataset))\n",
+    "\n",
+    "print(\"The total number of tables are:\", len(tables))\n",
+    "\n",
+    "for table in tables:\n",
+    "    print(table.table_id)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "9d5b8b48",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-07-05T15:19:53.304144Z",
+     "iopub.status.busy": "2025-07-05T15:19:53.303795Z",
+     "iopub.status.idle": "2025-07-05T15:19:53.312760Z",
+     "shell.execute_reply": "2025-07-05T15:19:53.311805Z"
+    },
+    "papermill": {
+     "duration": 0.017408,
+     "end_time": "2025-07-05T15:19:53.314438",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:53.297030",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "application/javascript": [
+       "parent.postMessage({\"jupyterEvent\": \"custom.exercise_interaction\", \"data\": {\"outcomeType\": 1, \"valueTowardsCompletion\": 0.3333333333333333, \"interactionType\": 1, \"questionType\": 1, \"questionId\": \"1_CountTables\", \"learnToolsVersion\": \"0.3.5\", \"failureMessage\": \"\", \"exceptionClass\": \"\", \"trace\": \"\"}}, \"*\")"
+      ],
+      "text/plain": [
+       "<IPython.core.display.Javascript object>"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/markdown": [
+       "<span style=\"color:#33cc33\">Correct</span>"
+      ],
+      "text/plain": [
+       "Correct"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "num_tables = 1  # Store the answer as num_tables and then run this cell\n",
+    "\n",
+    "# Check your answer\n",
+    "q_1.check()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "3638d9c5",
+   "metadata": {
+    "papermill": {
+     "duration": 0.004511,
+     "end_time": "2025-07-05T15:19:53.324215",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:53.319704",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "For a hint or the solution, uncomment the appropriate line below."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "4941f3e6",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-07-05T15:19:53.336464Z",
+     "iopub.status.busy": "2025-07-05T15:19:53.335364Z",
+     "iopub.status.idle": "2025-07-05T15:19:53.340071Z",
+     "shell.execute_reply": "2025-07-05T15:19:53.339126Z"
+    },
+    "papermill": {
+     "duration": 0.012599,
+     "end_time": "2025-07-05T15:19:53.341746",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:53.329147",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "#q_1.hint()\n",
+    "#q_1.solution()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "754c4945",
+   "metadata": {
+    "papermill": {
+     "duration": 0.004467,
+     "end_time": "2025-07-05T15:19:53.351141",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:53.346674",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "### 2) Explore the table schema\n",
+    "\n",
+    "How many columns in the `crime` table have `TIMESTAMP` data?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "c3921e7c",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-07-05T15:19:53.361845Z",
+     "iopub.status.busy": "2025-07-05T15:19:53.361488Z",
+     "iopub.status.idle": "2025-07-05T15:19:53.682884Z",
+     "shell.execute_reply": "2025-07-05T15:19:53.681804Z"
+    },
+    "papermill": {
+     "duration": 0.328836,
+     "end_time": "2025-07-05T15:19:53.684681",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:53.355845",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[SchemaField('unique_key', 'INTEGER', 'REQUIRED', None, None, (), None),\n",
+       " SchemaField('case_number', 'STRING', 'NULLABLE', None, None, (), None),\n",
+       " SchemaField('date', 'TIMESTAMP', 'NULLABLE', None, None, (), None),\n",
+       " SchemaField('block', 'STRING', 'NULLABLE', None, None, (), None),\n",
+       " SchemaField('iucr', 'STRING', 'NULLABLE', None, None, (), None),\n",
+       " SchemaField('primary_type', 'STRING', 'NULLABLE', None, None, (), None),\n",
+       " SchemaField('description', 'STRING', 'NULLABLE', None, None, (), None),\n",
+       " SchemaField('location_description', 'STRING', 'NULLABLE', None, None, (), None),\n",
+       " SchemaField('arrest', 'BOOLEAN', 'NULLABLE', None, None, (), None),\n",
+       " SchemaField('domestic', 'BOOLEAN', 'NULLABLE', None, None, (), None),\n",
+       " SchemaField('beat', 'INTEGER', 'NULLABLE', None, None, (), None),\n",
+       " SchemaField('district', 'INTEGER', 'NULLABLE', None, None, (), None),\n",
+       " SchemaField('ward', 'INTEGER', 'NULLABLE', None, None, (), None),\n",
+       " SchemaField('community_area', 'INTEGER', 'NULLABLE', None, None, (), None),\n",
+       " SchemaField('fbi_code', 'STRING', 'NULLABLE', None, None, (), None),\n",
+       " SchemaField('x_coordinate', 'FLOAT', 'NULLABLE', None, None, (), None),\n",
+       " SchemaField('y_coordinate', 'FLOAT', 'NULLABLE', None, None, (), None),\n",
+       " SchemaField('year', 'INTEGER', 'NULLABLE', None, None, (), None),\n",
+       " SchemaField('updated_on', 'TIMESTAMP', 'NULLABLE', None, None, (), None),\n",
+       " SchemaField('latitude', 'FLOAT', 'NULLABLE', None, None, (), None),\n",
+       " SchemaField('longitude', 'FLOAT', 'NULLABLE', None, None, (), None),\n",
+       " SchemaField('location', 'STRING', 'NULLABLE', None, None, (), None)]"
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# Write the code to figure out the answer\n",
+    "table_ref = dataset_ref.table(\"crime\")\n",
+    "\n",
+    "table = client.get_table(table_ref)\n",
+    "\n",
+    "table.schema"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "699d27c4",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-07-05T15:19:53.696059Z",
+     "iopub.status.busy": "2025-07-05T15:19:53.695720Z",
+     "iopub.status.idle": "2025-07-05T15:19:53.703454Z",
+     "shell.execute_reply": "2025-07-05T15:19:53.702608Z"
+    },
+    "papermill": {
+     "duration": 0.015238,
+     "end_time": "2025-07-05T15:19:53.705062",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:53.689824",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "application/javascript": [
+       "parent.postMessage({\"jupyterEvent\": \"custom.exercise_interaction\", \"data\": {\"outcomeType\": 1, \"valueTowardsCompletion\": 0.3333333333333333, \"interactionType\": 1, \"questionType\": 1, \"questionId\": \"2_CountTimestampFields\", \"learnToolsVersion\": \"0.3.5\", \"failureMessage\": \"\", \"exceptionClass\": \"\", \"trace\": \"\"}}, \"*\")"
+      ],
+      "text/plain": [
+       "<IPython.core.display.Javascript object>"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/markdown": [
+       "<span style=\"color:#33cc33\">Correct</span>"
+      ],
+      "text/plain": [
+       "Correct"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "num_timestamp_fields = 2 # Put your answer here\n",
+    "\n",
+    "# Check your answer\n",
+    "q_2.check()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "192abc7f",
+   "metadata": {
+    "papermill": {
+     "duration": 0.004727,
+     "end_time": "2025-07-05T15:19:53.715599",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:53.710872",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "For a hint or the solution, uncomment the appropriate line below."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "c77de09f",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-07-05T15:19:53.726932Z",
+     "iopub.status.busy": "2025-07-05T15:19:53.726623Z",
+     "iopub.status.idle": "2025-07-05T15:19:53.730799Z",
+     "shell.execute_reply": "2025-07-05T15:19:53.729943Z"
+    },
+    "papermill": {
+     "duration": 0.011739,
+     "end_time": "2025-07-05T15:19:53.732477",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:53.720738",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "#q_2.hint()\n",
+    "#q_2.solution()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "27e67ca4",
+   "metadata": {
+    "papermill": {
+     "duration": 0.005061,
+     "end_time": "2025-07-05T15:19:53.743380",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:53.738319",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "### 3) Create a crime map\n",
+    "\n",
+    "If you wanted to create a map with a dot at the location of each crime, what are the names of the two fields you likely need to pull out of the `crime` table to plot the crimes on a map?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "c6065a3a",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-07-05T15:19:53.754992Z",
+     "iopub.status.busy": "2025-07-05T15:19:53.754710Z",
+     "iopub.status.idle": "2025-07-05T15:19:54.511523Z",
+     "shell.execute_reply": "2025-07-05T15:19:54.510502Z"
+    },
+    "papermill": {
+     "duration": 0.764552,
+     "end_time": "2025-07-05T15:19:54.513055",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:53.748503",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>unique_key</th>\n",
+       "      <th>case_number</th>\n",
+       "      <th>date</th>\n",
+       "      <th>block</th>\n",
+       "      <th>iucr</th>\n",
+       "      <th>primary_type</th>\n",
+       "      <th>description</th>\n",
+       "      <th>location_description</th>\n",
+       "      <th>arrest</th>\n",
+       "      <th>domestic</th>\n",
+       "      <th>...</th>\n",
+       "      <th>ward</th>\n",
+       "      <th>community_area</th>\n",
+       "      <th>fbi_code</th>\n",
+       "      <th>x_coordinate</th>\n",
+       "      <th>y_coordinate</th>\n",
+       "      <th>year</th>\n",
+       "      <th>updated_on</th>\n",
+       "      <th>latitude</th>\n",
+       "      <th>longitude</th>\n",
+       "      <th>location</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>28627</td>\n",
+       "      <td>JE415175</td>\n",
+       "      <td>2021-10-19 13:49:00+00:00</td>\n",
+       "      <td>001XX N STATE ST</td>\n",
+       "      <td>0110</td>\n",
+       "      <td>HOMICIDE</td>\n",
+       "      <td>FIRST DEGREE MURDER</td>\n",
+       "      <td>CTA \"L\" TRAIN</td>\n",
+       "      <td>True</td>\n",
+       "      <td>False</td>\n",
+       "      <td>...</td>\n",
+       "      <td>42</td>\n",
+       "      <td>32</td>\n",
+       "      <td>01A</td>\n",
+       "      <td>1176330.0</td>\n",
+       "      <td>1901649.0</td>\n",
+       "      <td>2021</td>\n",
+       "      <td>2025-03-13 15:40:19+00:00</td>\n",
+       "      <td>41.885482</td>\n",
+       "      <td>-87.627936</td>\n",
+       "      <td>(41.885481891, -87.627935689)</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>12189203</td>\n",
+       "      <td>JD394481</td>\n",
+       "      <td>2020-10-09 07:00:00+00:00</td>\n",
+       "      <td>0000X E WACKER PL</td>\n",
+       "      <td>0281</td>\n",
+       "      <td>CRIMINAL SEXUAL ASSAULT</td>\n",
+       "      <td>NON-AGGRAVATED</td>\n",
+       "      <td>HOTEL / MOTEL</td>\n",
+       "      <td>False</td>\n",
+       "      <td>False</td>\n",
+       "      <td>...</td>\n",
+       "      <td>42</td>\n",
+       "      <td>32</td>\n",
+       "      <td>02</td>\n",
+       "      <td>1176964.0</td>\n",
+       "      <td>1902140.0</td>\n",
+       "      <td>2020</td>\n",
+       "      <td>2020-10-16 15:42:28+00:00</td>\n",
+       "      <td>41.886815</td>\n",
+       "      <td>-87.625593</td>\n",
+       "      <td>(41.886814897, -87.625592678)</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>10966486</td>\n",
+       "      <td>JA289203</td>\n",
+       "      <td>2017-05-28 17:30:00+00:00</td>\n",
+       "      <td>001XX N WABASH AVE</td>\n",
+       "      <td>0281</td>\n",
+       "      <td>CRIM SEXUAL ASSAULT</td>\n",
+       "      <td>NON-AGGRAVATED</td>\n",
+       "      <td>CTA PLATFORM</td>\n",
+       "      <td>False</td>\n",
+       "      <td>False</td>\n",
+       "      <td>...</td>\n",
+       "      <td>42</td>\n",
+       "      <td>32</td>\n",
+       "      <td>02</td>\n",
+       "      <td>1176791.0</td>\n",
+       "      <td>1901351.0</td>\n",
+       "      <td>2017</td>\n",
+       "      <td>2018-02-10 15:50:01+00:00</td>\n",
+       "      <td>41.884654</td>\n",
+       "      <td>-87.626252</td>\n",
+       "      <td>(41.884653752, -87.626251847)</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>11586737</td>\n",
+       "      <td>JC140804</td>\n",
+       "      <td>2019-02-04 23:00:00+00:00</td>\n",
+       "      <td>002XX N WABASH AVE</td>\n",
+       "      <td>0281</td>\n",
+       "      <td>CRIMINAL SEXUAL ASSAULT</td>\n",
+       "      <td>NON-AGGRAVATED</td>\n",
+       "      <td>HOTEL / MOTEL</td>\n",
+       "      <td>False</td>\n",
+       "      <td>False</td>\n",
+       "      <td>...</td>\n",
+       "      <td>42</td>\n",
+       "      <td>32</td>\n",
+       "      <td>02</td>\n",
+       "      <td>1176777.0</td>\n",
+       "      <td>1901808.0</td>\n",
+       "      <td>2019</td>\n",
+       "      <td>2020-04-24 15:39:50+00:00</td>\n",
+       "      <td>41.885908</td>\n",
+       "      <td>-87.626289</td>\n",
+       "      <td>(41.885908101, -87.626289429)</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>2583659</td>\n",
+       "      <td>HJ175715</td>\n",
+       "      <td>2003-02-10 14:00:00+00:00</td>\n",
+       "      <td>002XX S CANAL ST</td>\n",
+       "      <td>0312</td>\n",
+       "      <td>ROBBERY</td>\n",
+       "      <td>ARMED:KNIFE/CUTTING INSTRUMENT</td>\n",
+       "      <td>OTHER COMMERCIAL TRANSPORTATION</td>\n",
+       "      <td>False</td>\n",
+       "      <td>False</td>\n",
+       "      <td>...</td>\n",
+       "      <td>2</td>\n",
+       "      <td>28</td>\n",
+       "      <td>03</td>\n",
+       "      <td>1173177.0</td>\n",
+       "      <td>1899236.0</td>\n",
+       "      <td>2003</td>\n",
+       "      <td>2018-02-28 15:56:25+00:00</td>\n",
+       "      <td>41.878931</td>\n",
+       "      <td>-87.639586</td>\n",
+       "      <td>(41.878931004, -87.639585621)</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>5 rows × 22 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   unique_key case_number                      date               block  iucr  \\\n",
+       "0       28627    JE415175 2021-10-19 13:49:00+00:00    001XX N STATE ST  0110   \n",
+       "1    12189203    JD394481 2020-10-09 07:00:00+00:00   0000X E WACKER PL  0281   \n",
+       "2    10966486    JA289203 2017-05-28 17:30:00+00:00  001XX N WABASH AVE  0281   \n",
+       "3    11586737    JC140804 2019-02-04 23:00:00+00:00  002XX N WABASH AVE  0281   \n",
+       "4     2583659    HJ175715 2003-02-10 14:00:00+00:00    002XX S CANAL ST  0312   \n",
+       "\n",
+       "              primary_type                     description  \\\n",
+       "0                 HOMICIDE             FIRST DEGREE MURDER   \n",
+       "1  CRIMINAL SEXUAL ASSAULT                  NON-AGGRAVATED   \n",
+       "2      CRIM SEXUAL ASSAULT                  NON-AGGRAVATED   \n",
+       "3  CRIMINAL SEXUAL ASSAULT                  NON-AGGRAVATED   \n",
+       "4                  ROBBERY  ARMED:KNIFE/CUTTING INSTRUMENT   \n",
+       "\n",
+       "              location_description  arrest  domestic  ...  ward  \\\n",
+       "0                    CTA \"L\" TRAIN    True     False  ...    42   \n",
+       "1                    HOTEL / MOTEL   False     False  ...    42   \n",
+       "2                     CTA PLATFORM   False     False  ...    42   \n",
+       "3                    HOTEL / MOTEL   False     False  ...    42   \n",
+       "4  OTHER COMMERCIAL TRANSPORTATION   False     False  ...     2   \n",
+       "\n",
+       "   community_area  fbi_code  x_coordinate y_coordinate  year  \\\n",
+       "0              32       01A     1176330.0    1901649.0  2021   \n",
+       "1              32        02     1176964.0    1902140.0  2020   \n",
+       "2              32        02     1176791.0    1901351.0  2017   \n",
+       "3              32        02     1176777.0    1901808.0  2019   \n",
+       "4              28        03     1173177.0    1899236.0  2003   \n",
+       "\n",
+       "                 updated_on   latitude  longitude  \\\n",
+       "0 2025-03-13 15:40:19+00:00  41.885482 -87.627936   \n",
+       "1 2020-10-16 15:42:28+00:00  41.886815 -87.625593   \n",
+       "2 2018-02-10 15:50:01+00:00  41.884654 -87.626252   \n",
+       "3 2020-04-24 15:39:50+00:00  41.885908 -87.626289   \n",
+       "4 2018-02-28 15:56:25+00:00  41.878931 -87.639586   \n",
+       "\n",
+       "                        location  \n",
+       "0  (41.885481891, -87.627935689)  \n",
+       "1  (41.886814897, -87.625592678)  \n",
+       "2  (41.884653752, -87.626251847)  \n",
+       "3  (41.885908101, -87.626289429)  \n",
+       "4  (41.878931004, -87.639585621)  \n",
+       "\n",
+       "[5 rows x 22 columns]"
+      ]
+     },
+     "execution_count": 9,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# Write the code here to explore the data so you can find the answer\n",
+    "client.list_rows(table, max_results=5).to_dataframe()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "id": "9fbb0b92",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-07-05T15:19:54.525979Z",
+     "iopub.status.busy": "2025-07-05T15:19:54.525258Z",
+     "iopub.status.idle": "2025-07-05T15:19:54.533813Z",
+     "shell.execute_reply": "2025-07-05T15:19:54.532741Z"
+    },
+    "papermill": {
+     "duration": 0.01667,
+     "end_time": "2025-07-05T15:19:54.535430",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:54.518760",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "application/javascript": [
+       "parent.postMessage({\"jupyterEvent\": \"custom.exercise_interaction\", \"data\": {\"outcomeType\": 1, \"valueTowardsCompletion\": 0.3333333333333333, \"interactionType\": 1, \"questionType\": 2, \"questionId\": \"3_IdentifyFieldsForPlotting\", \"learnToolsVersion\": \"0.3.5\", \"failureMessage\": \"\", \"exceptionClass\": \"\", \"trace\": \"\"}}, \"*\")"
+      ],
+      "text/plain": [
+       "<IPython.core.display.Javascript object>"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/markdown": [
+       "<span style=\"color:#33cc33\">Correct</span>"
+      ],
+      "text/plain": [
+       "Correct"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "fields_for_plotting = ['latitude', 'longitude'] # Put your answers here\n",
+    "\n",
+    "# Check your answer\n",
+    "q_3.check()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "f67f6760",
+   "metadata": {
+    "papermill": {
+     "duration": 0.005361,
+     "end_time": "2025-07-05T15:19:54.546574",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:54.541213",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "For a hint or the solution, uncomment the appropriate line below."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "43270ec9",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-07-05T15:19:54.559461Z",
+     "iopub.status.busy": "2025-07-05T15:19:54.559051Z",
+     "iopub.status.idle": "2025-07-05T15:19:54.563254Z",
+     "shell.execute_reply": "2025-07-05T15:19:54.562346Z"
+    },
+    "papermill": {
+     "duration": 0.012764,
+     "end_time": "2025-07-05T15:19:54.564918",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:54.552154",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "#q_3.hint()\n",
+    "#q_3.solution()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "e7a8d6ba",
+   "metadata": {
+    "papermill": {
+     "duration": 0.005658,
+     "end_time": "2025-07-05T15:19:54.576562",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:54.570904",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "Thinking about the question above, there are a few columns that appear to have geographic data. Look at a few values (with the `list_rows()` command) to see if you can determine their relationship.  Two columns will still be hard to interpret. But it should be obvious how the `location` column relates to `latitude` and `longitude`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "id": "2c323ce2",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-07-05T15:19:54.588821Z",
+     "iopub.status.busy": "2025-07-05T15:19:54.588530Z",
+     "iopub.status.idle": "2025-07-05T15:19:54.593023Z",
+     "shell.execute_reply": "2025-07-05T15:19:54.592000Z"
+    },
+    "papermill": {
+     "duration": 0.012593,
+     "end_time": "2025-07-05T15:19:54.594590",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:54.581997",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "# Scratch space for your code"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "40efd90e",
+   "metadata": {
+    "papermill": {
+     "duration": 0.0054,
+     "end_time": "2025-07-05T15:19:54.606124",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:54.600724",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "# Keep going\n",
+    "\n",
+    "You've looked at the schema, but you haven't yet done anything exciting with the data itself. Things get more interesting when you get to the data, so keep going to **[write your first SQL query](https://www.kaggle.com/dansbecker/select-from-where).**"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "57feb0a4",
+   "metadata": {
+    "papermill": {
+     "duration": 0.005368,
+     "end_time": "2025-07-05T15:19:54.616982",
+     "exception": false,
+     "start_time": "2025-07-05T15:19:54.611614",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "---\n",
+    "\n",
+    "\n",
+    "\n",
+    "\n",
+    "*Have questions or comments? Visit the [course discussion forum](https://www.kaggle.com/learn/intro-to-sql/discussion) to chat with other learners.*"
+   ]
+  }
+ ],
+ "metadata": {
+  "kaggle": {
+   "accelerator": "none",
+   "dataSources": [
+    {
+     "datasetId": 22090,
+     "sourceId": 28376,
+     "sourceType": "datasetVersion"
+    },
+    {
+     "datasetId": 6057,
+     "sourceId": 285982,
+     "sourceType": "datasetVersion"
+    }
+   ],
+   "isGpuEnabled": false,
+   "isInternetEnabled": false,
+   "language": "python",
+   "sourceType": "notebook"
+  },
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.11.11"
+  },
+  "papermill": {
+   "default_parameters": {},
+   "duration": 33.255531,
+   "end_time": "2025-07-05T15:19:58.114326",
+   "environment_variables": {},
+   "exception": null,
+   "input_path": "__notebook__.ipynb",
+   "output_path": "__notebook__.ipynb",
+   "parameters": {},
+   "start_time": "2025-07-05T15:19:24.858795",
+   "version": "2.6.0"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
